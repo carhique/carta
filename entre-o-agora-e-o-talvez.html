@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#05070c">
+<title>Entre o agora e o talvez</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono&family=Manrope:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #05070c;
+  --blue: #2687ff;
+  --cyan: #64c7ff;
+  --text: #f1f5ff;
+  --muted: #9aa7bc;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  min-height: 100vh;
+  color: var(--text);
+  font-family: "Manrope", sans-serif;
+  background: radial-gradient(ellipse at 50% 25%, #0b1424, #070a12 45%, var(--bg) 80%);
+  overflow-x: hidden;
+}
+.ambient {
+  position: fixed; width: 300px; height: 300px; border-radius: 50%;
+  background: #086dff; filter: blur(100px); opacity: .12;
+  pointer-events: none; animation: drift 12s ease-in-out infinite alternate;
+}
+.ambient.one { top: 5%; left: -180px; }
+.ambient.two { bottom: 0; right: -180px; animation-delay: -5s; }
+.grid {
+  position: fixed; inset: 0; pointer-events: none; opacity: .12;
+  background-image: linear-gradient(#427ed2 1px, transparent 1px), linear-gradient(90deg, #427ed2 1px, transparent 1px);
+  background-size: 42px 42px;
+  mask-image: linear-gradient(to bottom, black, transparent 85%);
+}
+.shell {
+  position: relative; width: min(100% - 32px, 600px); min-height: 100vh;
+  margin: auto; display: flex; flex-direction: column; padding: 24px 0;
+}
+.topbar { display: flex; align-items: center; gap: 10px; font: 10px "DM Mono", monospace; letter-spacing: .12em; color: #aab7cc; }
+.brand { width: 20px; height: 20px; border: 1px solid var(--blue); border-radius: 50%; box-shadow: 0 0 15px #147aff33; flex-shrink: 0; }
+.brand::after { content: ""; display: block; width: 6px; height: 6px; margin: 6px; border-radius: 50%; background: var(--cyan); box-shadow: 0 0 10px var(--blue); }
+.status { margin-left: auto; color: #8090a7; font-size: 8px; white-space: nowrap; }
+.status::before { content: "●"; color: #53c8ff; margin-right: 5px; }
+.progress { height: 2px; margin-top: 18px; background: #172033; }
+.progress span { display: block; height: 100%; width: 20%; background: linear-gradient(90deg, var(--blue), var(--cyan)); box-shadow: 0 0 10px var(--blue); transition: width .5s ease; }
+.screen { flex: 1; display: flex; flex-direction: column; justify-content: center; padding: 30px 0; animation: enter .5s ease both; }
+.screen[hidden] { display: none; }
+.micro { color: var(--cyan); font: 10px "DM Mono", monospace; letter-spacing: .12em; margin-bottom: 18px; }
+h1, h2 { font-weight: 400; letter-spacing: -.055em; line-height: 1.12; margin: 0; }
+h1 { font-size: clamp(42px, 11vw, 66px); }
+h2 { font-size: clamp(34px, 8.7vw, 49px); }
+h1 em, h2 em { color: #70baff; font-style: normal; text-shadow: 0 0 28px #1680ff2a; }
+.lead { margin: 25px 0 7px; font-size: 16px; line-height: 1.6; }
+.sublead, .copy { color: var(--muted); font-size: 14px; line-height: 1.85; margin: 0 0 27px; }
+.orb { width: 155px; height: 155px; border: 1px solid #4399ff77; border-radius: 50%; margin: 0 auto 35px; display: grid; place-items: center; position: relative; box-shadow: 0 0 30px #126dff12; }
+.orb::before, .orb::after { content: ""; position: absolute; border: 1px solid #55c3ff44; border-radius: 50%; }
+.orb::before { inset: 15px; border-style: dashed; animation: rotate 18s linear infinite; }
+.orb::after { inset: 35px; }
+.orb-core { width: 48px; height: 48px; border: 1px solid var(--cyan); border-radius: 50%; background: #147aff22; box-shadow: 0 0 30px #147aff38; animation: pulse 3s infinite; }
+.primary { display: flex; justify-content: space-between; align-items: center; width: 100%; border: 1px solid #318cff; border-radius: 7px; padding: 16px 18px; color: white; background: linear-gradient(110deg, #0d3470, #0a1b35 72%); cursor: pointer; font: inherit; font-size: 13px; transition: .2s; }
+.primary:hover { border-color: var(--cyan); box-shadow: 0 0 28px #126dff24; transform: translateY(-1px); }
+.primary span { color: var(--cyan); font-size: 19px; }
+.quiet, .toggle { border: 0; background: transparent; color: #8ccaff; cursor: pointer; font: inherit; font-size: 12px; padding: 14px; }
+.quiet { align-self: center; }
+.footnote { color: #66758e; font: 8px "DM Mono", monospace; text-align: center; margin-top: 19px; letter-spacing: .1em; }
+.signal { width: 145px; height: 145px; border: 1px solid #2279dc77; border-radius: 50%; margin: 0 auto 35px; display: grid; place-items: center; position: relative; color: #dcecff; font: 12px "DM Mono", monospace; }
+.signal::before, .signal::after { content: ""; position: absolute; border: 1px solid #348eff70; border-radius: 50%; }
+.signal::before { inset: 15px; animation: pulse 3s infinite; }
+.signal::after { inset: 32px; border-style: dashed; animation: rotate 25s linear infinite; }
+.symbol { width: 72px; height: 72px; border: 1px solid #2b8fff99; border-radius: 50%; color: #82c9ff; display: grid; place-items: center; font: 30px "DM Mono", monospace; margin-bottom: 28px; box-shadow: 0 0 30px #147aff15; }
+.reminder { color: #a9bad2; font-size: 12px; line-height: 1.8; border-left: 1px solid var(--blue); padding-left: 14px; margin-bottom: 24px; }
+.letter { border: 1px solid #5d9eff3b; background: linear-gradient(145deg, #0d1625e0, #05080eeb); padding: 20px 17px; margin: 24px 0; box-shadow: 0 14px 50px #0005; }
+.letter-meta { display: flex; justify-content: space-between; color: #6f829e; font: 8px "DM Mono", monospace; letter-spacing: .1em; gap: 8px; }
+.letter h2 { font-size: clamp(27px, 7vw, 37px); margin: 25px 0; }
+.letter p { color: #c0ccde; font-size: 13px; line-height: 1.9; margin-bottom: 15px; }
+.signature { color: #e1eaff; margin: 25px 0; font-size: 13px; }
+.signature span { color: #55b7ff; }
+.ending { text-align: center; }
+.heart { width: 90px; height: 90px; display: grid; place-items: center; align-self: center; border: 1px solid #318cff77; border-radius: 50%; color: #70baff; font-size: 29px; box-shadow: 0 0 45px #126dff14; animation: pulse 3s infinite; margin-bottom: 28px; }
+.footer { display: flex; justify-content: space-between; gap: 12px; color: #526078; font: 7px "DM Mono", monospace; border-top: 1px solid #ffffff0b; padding-top: 14px; margin-top: auto; }
+@keyframes enter { from { opacity: 0; transform: translateY(9px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes pulse { 0%, 100% { opacity: .7; transform: scale(.98); } 50% { opacity: 1; transform: scale(1.03); } }
+@keyframes rotate { to { transform: rotate(360deg); } }
+@keyframes drift { to { transform: translate(35px, -20px) scale(1.1); } }
+
+/* TELA DE SENHA */
+.lock-screen {
+  position: fixed; inset: 0; z-index: 9999; display: flex; align-items: center;
+  justify-content: center; padding: 24px;
+  background: radial-gradient(ellipse at 50% 25%, #0b1424, #070a12 55%, #05070c 100%);
+  overflow-y: auto;
+}
+.lock-screen[hidden] { display: none; }
+.lock-content { width: 100%; max-width: 340px; text-align: center; animation: enter .6s ease both; }
+.lock-orb { width: 100px; height: 100px; margin: 0 auto 30px; border: 1px solid #4399ff77; border-radius: 50%; display: grid; place-items: center; position: relative; box-shadow: 0 0 40px #126dff20; }
+.lock-orb::before { content: ""; position: absolute; inset: 10px; border: 1px dashed #55c3ff66; border-radius: 50%; animation: rotate 18s linear infinite; }
+.lock-icon { font-size: 30px; color: #70baff; text-shadow: 0 0 20px #2687ff; }
+.lock-title { font-size: 30px; font-weight: 400; letter-spacing: -.05em; margin: 0 0 14px; }
+.lock-title em { color: #70baff; font-style: normal; }
+.lock-description { color: #9aa7bc; font-size: 13px; line-height: 1.8; margin: 0 auto 25px; }
+.password-dots { display: flex; justify-content: center; gap: 15px; margin: 28px 0 12px; }
+.password-dot { width: 11px; height: 11px; border: 1px solid #4d8fd8; border-radius: 50%; background: transparent; transition: .2s; }
+.password-dot.filled { background: #64c7ff; border-color: #64c7ff; box-shadow: 0 0 12px #2687ff99; }
+.lock-error { min-height: 20px; color: #ff8294; font-size: 11px; margin: 0 0 12px; }
+.keypad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; max-width: 290px; margin: 0 auto; }
+.key { height: 53px; border: 1px solid #243650; border-radius: 9px; color: #edf5ff; background: #0b1422cc; font: 20px "DM Mono", monospace; cursor: pointer; transition: .15s; -webkit-tap-highlight-color: transparent; }
+.key:active { background: #123566; border-color: #64c7ff; transform: scale(.96); }
+.key.action { color: #80caff; font: 11px "Manrope", sans-serif; }
+.key.confirm { background: linear-gradient(110deg, #0d3470, #0a1b35); border-color: #318cff; color: white; font: 12px "Manrope", sans-serif; }
+.lock-footnote { color: #526078; font: 8px "DM Mono", monospace; letter-spacing: .1em; margin-top: 25px; }
+@media (min-width: 560px) { .shell { padding: 30px 0; } .screen { padding-left: 28px; padding-right: 28px; } .letter { padding: 25px 27px; } .letter p { font-size: 14px; } }
+@media (max-height: 650px) {
+  .lock-orb { width: 70px; height: 70px; margin-bottom: 18px; }
+  .lock-title { font-size: 26px; }
+  .lock-description { margin-bottom: 12px; }
+  .password-dots { margin: 18px 0 8px; }
+  .key { height: 44px; }
+  .keypad { gap: 7px; }
+  .lock-footnote { margin-top: 15px; }
+}
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; } }
+</style>
+</head>
+<body>
+<!-- BLOQUEIO POR SENHA -->
+<div class="lock-screen" id="lockScreen">
+  <div class="lock-content">
+    <div class="lock-orb"><div class="lock-icon">⌑</div></div>
+    <p class="micro">• ACESSO RESTRITO</p>
+    <h2 class="lock-title">Antes de <em>entrar.</em></h2>
+    <p class="lock-description">A senha é a mesma que você usa para desbloquear o seu celular.</p>
+    <div class="password-dots" id="passwordDots" aria-label="6 dígitos">
+      <span class="password-dot"></span><span class="password-dot"></span><span class="password-dot"></span>
+      <span class="password-dot"></span><span class="password-dot"></span><span class="password-dot"></span>
+    </div>
+    <p class="lock-error" id="lockError" aria-live="polite"></p>
+    <div class="keypad">
+      <button class="key" data-digit="1" type="button">1</button><button class="key" data-digit="2" type="button">2</button><button class="key" data-digit="3" type="button">3</button>
+      <button class="key" data-digit="4" type="button">4</button><button class="key" data-digit="5" type="button">5</button><button class="key" data-digit="6" type="button">6</button>
+      <button class="key" data-digit="7" type="button">7</button><button class="key" data-digit="8" type="button">8</button><button class="key" data-digit="9" type="button">9</button>
+      <button class="key action" id="clearPassword" type="button">LIMPAR</button><button class="key" data-digit="0" type="button">0</button><button class="key action" id="deleteDigit" type="button">⌫ APAGAR</button>
+      <button class="key confirm" id="confirmPassword" type="button" style="grid-column: 1 / -1;">DESBLOQUEAR ↗</button>
+    </div>
+    <p class="lock-footnote">UMA PEQUENA CAMADA DE PRIVACIDADE · CH // 2026</p>
+  </div>
+</div>
+
+<div class="ambient one"></div>
+<div class="ambient two"></div>
+<div class="grid"></div>
+<main class="shell">
+  <header class="topbar">
+    <span class="brand"></span>
+    <span>ARQUIVO PESSOAL /// VICTORIA</span>
+    <span class="status">CONEXÃO ESTÁVEL</span>
+  </header>
+  <div class="progress"><span id="progressBar"></span></div>
+
+  <!-- TELA 1 -->
+  <section class="screen" data-screen="0">
+    <div class="orb"><div class="orb-core"></div></div>
+    <p class="micro">• UM PEQUENO CONVITE</p>
+    <h1>Entre o agora<br><em>e o talvez.</em></h1>
+    <p class="lead">Eu costumava dizer que vivia só o momento.</p>
+    <p class="sublead">Mas algumas pessoas fazem a gente olhar para o agora de um jeito diferente.</p>
+    <button class="primary" data-next type="button">Iniciar experiência <span>↗</span></button>
+    <p class="footnote">LEIA NO SEU TEMPO. SEM PRESSA</p>
+  </section>
+
+  <!-- TELA 2 -->
+  <section class="screen" data-screen="1" hidden>
+    <div class="signal"></div>
+    <p class="micro">• SINAL ENCONTRADO</p>
+    <h2>Nem tudo que importa<br><em>faz barulho.</em></h2>
+    <p class="copy">Algumas coisas começam em silêncio, num detalhe que talvez passe despercebido. Uma conversa, um sorriso, um instante que fica com a gente mesmo depois que termina.</p>
+    <button class="primary" data-next type="button">Continuar <span>→</span></button>
+    <button class="quiet" data-back type="button">Voltar</button>
+  </section>
+
+  <!-- TELA 3 -->
+  <section class="screen" data-screen="2" hidden>
+    <div class="symbol">?</div>
+    <p class="micro">• ANTES DE ABRIR</p>
+    <h2>Posso te contar<br><em>uma coisa?</em></h2>
+    <p class="copy">Não existe resposta certa aqui. Nem uma expectativa escondida nestas palavras. É só algo sincero que eu queria dividir com você — sem pressa e sem cobrança.</p>
+    <button class="toggle" id="reminderToggle" aria-expanded="false" type="button">＋ Um lembrete</button>
+    <p class="reminder" id="reminder" hidden>Você não precisa saber o que vai acontecer amanhã para reconhecer o que é importante hoje.</p>
+    <button class="primary" data-next type="button">Ler a carta <span>↗</span></button>
+    <button class="quiet" data-back type="button">Voltar</button>
+  </section>
+
+  <!-- TELA 4 -->
+  <section class="screen" data-screen="3" hidden>
+    <p class="micro">• UMA MENSAGEM SINCERA</p>
+    <div class="letter">
+      <div class="letter-meta"><span>NOTA PESSOAL</span><span>01 / 01</span></div>
+      <h2>Para você,<br><em>com carinho.</em></h2>
+      <p>Eu costumava dizer que vivia só o momento, sem pensar muito no que viria depois.</p>
+      <p>Mas existem pessoas que fazem a gente perceber que alguns momentos têm um significado diferente. Uma conversa que continua na cabeça depois que termina. Um sorriso que aparece na memória sem avisar. Pequenos detalhes que acabam ocupando um espaço especial.</p>
+      <p>Você se tornou alguém assim para mim.</p>
+      <p>Não sei o que o futuro guarda, e não quero transformar o que sinto em uma cobrança. Só queria que você soubesse que meu carinho é sincero e que os momentos que compartilho com você são importantes para mim.</p>
+      <p>Talvez eu não tenha todas as respostas. Mas sei reconhecer quando alguém torna o presente especial.</p>
+      <div class="signature">Com carinho. <span>♥</span></div>
+      <div class="signature">- henrique</div>
+      <div class="letter-meta"><span>FIM DA MENSAGEM</span><span>001</span></div>
+    </div>
+    <button class="primary" data-next type="button">Continuar <span>→</span></button>
+    <button class="quiet" data-back type="button">Voltar à mensagem anterior</button>
+  </section>
+
+  <!-- TELA 5 -->
+  <section class="screen ending" data-screen="4" hidden>
+    <div class="heart">♥</div>
+    <p class="micro">• FIM DA EXPERIÊNCIA</p>
+    <h2>O futuro pode esperar.<br><em>Este carinho é de agora.</em></h2>
+    <p class="copy">Você chegou até aqui. Obrigado por dedicar um pedacinho do seu tempo a estas palavras.</p>
+    <p class="copy">Algumas coisas não precisam de uma definição imediata. Às vezes, basta serem verdadeiras.</p>
+    <button class="primary" id="restart" type="button">Recomeçar a experiência <span>↻</span></button>
+    <p class="footnote">ENTRE O AGORA E O TALVEZ · VICTORIA</p>
+  </section>
+  <footer class="footer"><span>DESENVOLVIDO COM CARINHO ♡</span><span>ch // 2026</span></footer>
+</main>
+
+<script>
+(() => {
+  const PASSWORD = "300601";
+  const lockScreen = document.getElementById("lockScreen");
+  const dots = [...document.querySelectorAll(".password-dot")];
+  const error = document.getElementById("lockError");
+  const confirmButton = document.getElementById("confirmPassword");
+  let enteredPassword = "";
+  let unlocked = false;
+
+  function updateDots() {
+    dots.forEach((dot, index) => dot.classList.toggle("filled", index < enteredPassword.length));
+  }
+  function addDigit(digit) {
+    if (unlocked || enteredPassword.length >= 6) return;
+    enteredPassword += digit;
+    error.textContent = "";
+    updateDots();
+  }
+  function deleteDigit() {
+    if (unlocked) return;
+    enteredPassword = enteredPassword.slice(0, -1);
+    error.textContent = "";
+    updateDots();
+  }
+  function clearPassword() {
+    if (unlocked) return;
+    enteredPassword = "";
+    error.textContent = "";
+    updateDots();
+  }
+  function unlock() {
+    if (unlocked) return;
+    if (enteredPassword === PASSWORD) {
+      unlocked = true;
+      lockScreen.hidden = true;
+      document.body.style.overflow = "";
+      showScreen(0);
+    } else {
+      error.textContent = "Senha incorreta. Tente novamente.";
+      enteredPassword = "";
+      updateDots();
+    }
+  }
+  document.querySelectorAll("[data-digit]").forEach(button => button.addEventListener("click", () => addDigit(button.dataset.digit)));
+  document.getElementById("deleteDigit").addEventListener("click", deleteDigit);
+  document.getElementById("clearPassword").addEventListener("click", clearPassword);
+  confirmButton.addEventListener("click", unlock);
+
+  const screens = [...document.querySelectorAll(".screen")];
+  const progress = document.getElementById("progressBar");
+  let current = 0;
+  function showScreen(index) {
+    current = Math.max(0, Math.min(index, screens.length - 1));
+    screens.forEach((screen, i) => { screen.hidden = i !== current; });
+    progress.style.width = `${((current + 1) / screens.length) * 100}%`;
+    window.scrollTo({
+      top: 0,
+      behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth"
+    });
+  }
+  document.querySelectorAll("[data-next]").forEach(button => button.addEventListener("click", () => showScreen(current + 1)));
+  document.querySelectorAll("[data-back]").forEach(button => button.addEventListener("click", () => showScreen(current - 1)));
+  document.getElementById("restart").addEventListener("click", () => showScreen(0));
+
+  const toggle = document.getElementById("reminderToggle");
+  const reminder = document.getElementById("reminder");
+  toggle.addEventListener("click", () => {
+    const open = reminder.hidden;
+    reminder.hidden = !open;
+    toggle.setAttribute("aria-expanded", String(open));
+    toggle.textContent = open ? "− Fechar lembrete" : "＋ Um lembrete";
+  });
+
+  document.body.style.overflow = "hidden";
+  showScreen(0);
+})();
+</script>
+</body>
+</html>
